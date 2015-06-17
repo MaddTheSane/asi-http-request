@@ -73,7 +73,7 @@
 - (IBAction)clearCache:(id)sender;
 - (IBAction)fetchWebPage:(id)sender;
 
-@property (retain, nonatomic) ASIHTTPRequest *bigFetchRequest;
-@property (retain, nonatomic) NSMutableArray *rowData;
-@property (retain, nonatomic) ASINetworkQueue *tableQueue;
+@property (strong, nonatomic) ASIHTTPRequest *bigFetchRequest;
+@property (strong, nonatomic) NSMutableArray *rowData;
+@property (strong, nonatomic) ASINetworkQueue *tableQueue;
 @end

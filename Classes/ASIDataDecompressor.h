@@ -19,7 +19,7 @@
 }
 
 // Convenience constructor will call setupStream for you
-+ (id)decompressor;
++ (instancetype)decompressor;
 
 // Uncompress the passed chunk of data
 - (NSData *)uncompressBytes:(Bytef *)bytes length:(NSUInteger)length error:(NSError **)err;

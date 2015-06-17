@@ -29,7 +29,7 @@
 
 + (id)queue
 {
-	return [[[self alloc] init] autorelease];
+	return [[self alloc] init];
 }
 
 - (void)dealloc
@@ -38,8 +38,6 @@
 	for (ASIHTTPRequest *request in [self operations]) {
 		[request setQueue:nil];
 	}
-	[userInfo release];
-	[super dealloc];
 }
 
 - (void)setSuspended:(BOOL)suspend
@@ -79,14 +77,18 @@
 - (void)setUploadProgressDelegate:(id)newDelegate
 {
 	uploadProgressDelegate = newDelegate;
-	[self resetProgressDelegate:&uploadProgressDelegate];
+	id tmp = uploadProgressDelegate;
+	[self resetProgressDelegate:&tmp];
+	uploadProgressDelegate = tmp;
 
 }
 
 - (void)setDownloadProgressDelegate:(id)newDelegate
 {
 	downloadProgressDelegate = newDelegate;
-	[self resetProgressDelegate:&downloadProgressDelegate];
+	id tmp = downloadProgressDelegate;
+	[self resetProgressDelegate:&tmp];
+	downloadProgressDelegate = tmp;
 }
 
 - (void)resetProgressDelegate:(id *)progressDelegate
@@ -153,7 +155,9 @@
 				[self addHEADOperation:HEADRequest];
 				[request addDependency:HEADRequest];
 				if ([request shouldResetDownloadProgress]) {
-					[self resetProgressDelegate:&downloadProgressDelegate];
+					id tmp = downloadProgressDelegate;
+					[self resetProgressDelegate:&tmp];
+					downloadProgressDelegate = tmp;
 					[request setShouldResetDownloadProgress:NO];
 				}
 			}
@@ -168,7 +172,9 @@
 	}
 	// Tell the request not to increment the upload size when it starts, as we've already added its length
 	if ([request shouldResetUploadProgress]) {
-		[self resetProgressDelegate:&uploadProgressDelegate];
+		id tmp = uploadProgressDelegate;
+		[self resetProgressDelegate:&tmp];
+		uploadProgressDelegate = tmp;
 		[request setShouldResetUploadProgress:NO];
 	}
 	
@@ -235,7 +241,9 @@
 {
 	[self setBytesDownloadedSoFar:[self bytesDownloadedSoFar]+(unsigned long long)bytes];
 	if ([self downloadProgressDelegate]) {
-		[ASIHTTPRequest updateProgressIndicator:&downloadProgressDelegate withProgress:[self bytesDownloadedSoFar] ofTotal:[self totalBytesToDownload]];
+		id tmp = downloadProgressDelegate;
+		[ASIHTTPRequest updateProgressIndicator:&tmp withProgress:[self bytesDownloadedSoFar] ofTotal:[self totalBytesToDownload]];
+		downloadProgressDelegate = tmp;
 	}
 }
 
@@ -243,7 +251,9 @@
 {
 	[self setBytesUploadedSoFar:[self bytesUploadedSoFar]+(unsigned long long)bytes];
 	if ([self uploadProgressDelegate]) {
-		[ASIHTTPRequest updateProgressIndicator:&uploadProgressDelegate withProgress:[self bytesUploadedSoFar] ofTotal:[self totalBytesToUpload]];
+		id tmp = uploadProgressDelegate;
+		[ASIHTTPRequest updateProgressIndicator:&tmp withProgress:[self bytesUploadedSoFar] ofTotal:[self totalBytesToUpload]];
+		uploadProgressDelegate = tmp;
 	}
 }
 
@@ -318,7 +328,7 @@
 	[newQueue setDownloadProgressDelegate:[self downloadProgressDelegate]];
 	[newQueue setShouldCancelAllRequestsOnFailure:[self shouldCancelAllRequestsOnFailure]];
 	[newQueue setShowAccurateProgress:[self showAccurateProgress]];
-	[newQueue setUserInfo:[[[self userInfo] copyWithZone:zone] autorelease]];
+	[newQueue setUserInfo:[[self userInfo] copyWithZone:zone]];
 	return newQueue;
 }
 

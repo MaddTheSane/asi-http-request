@@ -13,7 +13,7 @@
 @interface ASINetworkQueue : NSOperationQueue <ASIProgressDelegate, ASIHTTPRequestDelegate, NSCopying> {
 	
 	// Delegate will get didFail + didFinish messages (if set)
-	id delegate;
+	id __unsafe_unretained delegate;
 
 	// Will be called when a request starts with the request as the argument
 	SEL requestDidStartSelector;
@@ -36,7 +36,7 @@
 	SEL queueDidFinishSelector;
 	
 	// Upload progress indicator, probably an NSProgressIndicator or UIProgressView
-	id uploadProgressDelegate;
+	id __unsafe_unretained uploadProgressDelegate;
 	
 	// Total amount uploaded so far for all requests in this queue
 	unsigned long long bytesUploadedSoFar;
@@ -45,7 +45,7 @@
 	unsigned long long totalBytesToUpload;
 
 	// Download progress indicator, probably an NSProgressIndicator or UIProgressView
-	id downloadProgressDelegate;
+	id __unsafe_unretained downloadProgressDelegate;
 	
 	// Total amount downloaded so far for all requests in this queue
 	unsigned long long bytesDownloadedSoFar;
@@ -85,8 +85,8 @@
 // This method will start the queue
 - (void)go;
 
-@property (assign, nonatomic, setter=setUploadProgressDelegate:) id uploadProgressDelegate;
-@property (assign, nonatomic, setter=setDownloadProgressDelegate:) id downloadProgressDelegate;
+@property (unsafe_unretained, nonatomic, setter=setUploadProgressDelegate:) id uploadProgressDelegate;
+@property (unsafe_unretained, nonatomic, setter=setDownloadProgressDelegate:) id downloadProgressDelegate;
 
 @property (assign, atomic) SEL requestDidStartSelector;
 @property (assign, atomic) SEL requestDidReceiveResponseHeadersSelector;
@@ -95,10 +95,10 @@
 @property (assign, atomic) SEL requestDidFailSelector;
 @property (assign, atomic) SEL queueDidFinishSelector;
 @property (assign, atomic) BOOL shouldCancelAllRequestsOnFailure;
-@property (assign, atomic) id delegate;
+@property (unsafe_unretained, atomic) id delegate;
 @property (assign, atomic) BOOL showAccurateProgress;
 @property (assign, atomic, readonly) int requestsCount;
-@property (retain, atomic) NSDictionary *userInfo;
+@property (strong, atomic) NSDictionary *userInfo;
 
 @property (assign, atomic) unsigned long long bytesUploadedSoFar;
 @property (assign, atomic) unsigned long long totalBytesToUpload;

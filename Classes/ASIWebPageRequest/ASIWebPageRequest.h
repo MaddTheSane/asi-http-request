@@ -74,7 +74,7 @@ typedef enum _ASIURLReplacementMode {
 - (NSString *)cachePathForRequest:(ASIWebPageRequest *)theRequest;
 
 
-@property (retain, nonatomic) ASIWebPageRequest *parentRequest;
+@property (strong, nonatomic) ASIWebPageRequest *parentRequest;
 @property (assign, nonatomic) ASIURLReplacementMode urlReplacementMode;
 @property (assign, nonatomic) BOOL shouldIgnoreExternalResourceErrors;
 @end

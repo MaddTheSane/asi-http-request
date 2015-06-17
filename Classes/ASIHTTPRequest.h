@@ -93,7 +93,7 @@ typedef void (^ASIDataBlock)(NSData *data);
 	NSURL *redirectURL;
 
 	// The delegate - will be notified of various changes in state via the ASIHTTPRequestDelegate protocol
-	id <ASIHTTPRequestDelegate> delegate;
+	id <ASIHTTPRequestDelegate> __unsafe_unretained delegate;
 	
 	// Another delegate that is also notified of request status changes and progress updates
 	// Generally, you won't use this directly, but ASINetworkQueue sets itself as the queue so it can proxy updates to its own delegates
@@ -206,10 +206,10 @@ typedef void (^ASIDataBlock)(NSData *data);
 	NSString *proxyDomain;
 	
 	// Delegate for displaying upload progress (usually an NSProgressIndicator, but you can supply a different object and handle this yourself)
-	id <ASIProgressDelegate> uploadProgressDelegate;
+	id <ASIProgressDelegate> __unsafe_unretained uploadProgressDelegate;
 	
 	// Delegate for displaying download progress (usually an NSProgressIndicator, but you can supply a different object and handle this yourself)
-	id <ASIProgressDelegate> downloadProgressDelegate;
+	id <ASIProgressDelegate> __unsafe_unretained downloadProgressDelegate;
 	
 	// Whether we've seen the headers of the response yet
     BOOL haveExaminedHeaders;
@@ -319,7 +319,7 @@ typedef void (^ASIDataBlock)(NSData *data);
 	BOOL shouldResetDownloadProgress;
 	
 	// Used by HEAD requests when showAccurateProgress is YES to preset the content-length for this request
-	ASIHTTPRequest *mainRequest;
+	ASIHTTPRequest *__unsafe_unretained mainRequest;
 	
 	// When NO, this request will only update the progress indicator when it completes
 	// When YES, this request will update the progress indicator according to how much data it has received so far
@@ -444,13 +444,13 @@ typedef void (^ASIDataBlock)(NSData *data);
 	NSNumber *requestID;
 	
 	// Will be ASIHTTPRequestRunLoopMode for synchronous requests, NSDefaultRunLoopMode for all other requests
-	NSString *runLoopMode;
+	NSString *__unsafe_unretained runLoopMode;
 	
 	// This timer checks up on the request every 0.25 seconds, and updates progress
 	NSTimer *statusTimer;
 	
 	// The download cache that will be used for this request (use [ASIHTTPRequest setDefaultCache:cache] to configure a default cache
-	id <ASICacheDelegate> downloadCache;
+	id <ASICacheDelegate> __unsafe_unretained downloadCache;
 	
 	// The cache policy that will be used for this request - See ASICacheDelegate.h for possible values
 	ASICachePolicy cachePolicy;
@@ -901,58 +901,58 @@ typedef void (^ASIDataBlock)(NSData *data);
 
 #pragma mark ===
 
-@property (atomic, retain) NSString *username;
-@property (atomic, retain) NSString *password;
-@property (atomic, retain) NSString *userAgentString;
-@property (atomic, retain) NSString *domain;
+@property (atomic, strong) NSString *username;
+@property (atomic, strong) NSString *password;
+@property (atomic, strong) NSString *userAgentString;
+@property (atomic, strong) NSString *domain;
 
-@property (atomic, retain) NSString *proxyUsername;
-@property (atomic, retain) NSString *proxyPassword;
-@property (atomic, retain) NSString *proxyDomain;
+@property (atomic, strong) NSString *proxyUsername;
+@property (atomic, strong) NSString *proxyPassword;
+@property (atomic, strong) NSString *proxyDomain;
 
-@property (atomic, retain) NSString *proxyHost;
+@property (atomic, strong) NSString *proxyHost;
 @property (atomic, assign) int proxyPort;
-@property (atomic, retain) NSString *proxyType;
+@property (atomic, strong) NSString *proxyType;
 
-@property (retain,setter=setURL:, nonatomic) NSURL *url;
-@property (atomic, retain) NSURL *originalURL;
-@property (assign, nonatomic) id delegate;
-@property (retain, nonatomic) id queue;
-@property (assign, nonatomic) id uploadProgressDelegate;
-@property (assign, nonatomic) id downloadProgressDelegate;
+@property (strong,setter=setURL:, nonatomic) NSURL *url;
+@property (atomic, strong) NSURL *originalURL;
+@property (unsafe_unretained, nonatomic) id delegate;
+@property (strong, nonatomic) id queue;
+@property (unsafe_unretained, nonatomic) id uploadProgressDelegate;
+@property (unsafe_unretained, nonatomic) id downloadProgressDelegate;
 @property (atomic, assign) BOOL useKeychainPersistence;
 @property (atomic, assign) BOOL useSessionPersistence;
-@property (atomic, retain) NSString *downloadDestinationPath;
-@property (atomic, retain) NSString *temporaryFileDownloadPath;
-@property (atomic, retain) NSString *temporaryUncompressedDataDownloadPath;
+@property (atomic, strong) NSString *downloadDestinationPath;
+@property (atomic, strong) NSString *temporaryFileDownloadPath;
+@property (atomic, strong) NSString *temporaryUncompressedDataDownloadPath;
 @property (atomic, assign) SEL didStartSelector;
 @property (atomic, assign) SEL didReceiveResponseHeadersSelector;
 @property (atomic, assign) SEL willRedirectSelector;
 @property (atomic, assign) SEL didFinishSelector;
 @property (atomic, assign) SEL didFailSelector;
 @property (atomic, assign) SEL didReceiveDataSelector;
-@property (atomic, retain,readonly) NSString *authenticationRealm;
-@property (atomic, retain,readonly) NSString *proxyAuthenticationRealm;
-@property (atomic, retain) NSError *error;
+@property (atomic, strong,readonly) NSString *authenticationRealm;
+@property (atomic, strong,readonly) NSString *proxyAuthenticationRealm;
+@property (atomic, strong) NSError *error;
 @property (atomic, assign,readonly) BOOL complete;
-@property (atomic, retain) NSDictionary *responseHeaders;
-@property (atomic, retain) NSMutableDictionary *requestHeaders;
-@property (atomic, retain) NSMutableArray *requestCookies;
-@property (atomic, retain,readonly) NSArray *responseCookies;
+@property (atomic, strong) NSDictionary *responseHeaders;
+@property (atomic, strong) NSMutableDictionary *requestHeaders;
+@property (atomic, strong) NSMutableArray *requestCookies;
+@property (atomic, strong,readonly) NSArray *responseCookies;
 @property (atomic, assign) BOOL useCookiePersistence;
-@property (atomic, retain) NSDictionary *requestCredentials;
-@property (atomic, retain) NSDictionary *proxyCredentials;
+@property (atomic, strong) NSDictionary *requestCredentials;
+@property (atomic, strong) NSDictionary *proxyCredentials;
 @property (atomic, assign,readonly) int responseStatusCode;
-@property (atomic, retain,readonly) NSString *responseStatusMessage;
-@property (atomic, retain) NSMutableData *rawResponseData;
+@property (atomic, strong,readonly) NSString *responseStatusMessage;
+@property (atomic, strong) NSMutableData *rawResponseData;
 @property (atomic, assign) NSTimeInterval timeOutSeconds;
-@property (retain, nonatomic) NSString *requestMethod;
-@property (atomic, retain) NSMutableData *postBody;
+@property (strong, nonatomic) NSString *requestMethod;
+@property (atomic, strong) NSMutableData *postBody;
 @property (atomic, assign) unsigned long long contentLength;
 @property (atomic, assign) unsigned long long postLength;
 @property (atomic, assign) BOOL shouldResetDownloadProgress;
 @property (atomic, assign) BOOL shouldResetUploadProgress;
-@property (atomic, assign) ASIHTTPRequest *mainRequest;
+@property (atomic, unsafe_unretained) ASIHTTPRequest *mainRequest;
 @property (atomic, assign) BOOL showAccurateProgress;
 @property (atomic, assign) unsigned long long totalBytesRead;
 @property (atomic, assign) unsigned long long totalBytesSent;
@@ -960,9 +960,9 @@ typedef void (^ASIDataBlock)(NSData *data);
 @property (atomic, assign) NSStringEncoding responseEncoding;
 @property (atomic, assign) BOOL allowCompressedResponse;
 @property (atomic, assign) BOOL allowResumeForFileDownloads;
-@property (atomic, retain) NSDictionary *userInfo;
+@property (atomic, strong) NSDictionary *userInfo;
 @property (atomic, assign) NSInteger tag;
-@property (atomic, retain) NSString *postBodyFilePath;
+@property (atomic, strong) NSString *postBodyFilePath;
 @property (atomic, assign) BOOL shouldStreamPostDataFromDisk;
 @property (atomic, assign) BOOL didCreateTemporaryPostDataFile;
 @property (atomic, assign) BOOL useHTTPVersionOne;
@@ -970,9 +970,9 @@ typedef void (^ASIDataBlock)(NSData *data);
 @property (atomic, assign) BOOL shouldRedirect;
 @property (atomic, assign) BOOL validatesSecureCertificate;
 @property (atomic, assign) BOOL shouldCompressRequestBody;
-@property (atomic, retain) NSURL *PACurl;
-@property (atomic, retain) NSString *authenticationScheme;
-@property (atomic, retain) NSString *proxyAuthenticationScheme;
+@property (atomic, strong) NSURL *PACurl;
+@property (atomic, strong) NSString *authenticationScheme;
+@property (atomic, strong) NSString *proxyAuthenticationScheme;
 @property (atomic, assign) BOOL shouldPresentAuthenticationDialog;
 @property (atomic, assign) BOOL shouldPresentProxyAuthenticationDialog;
 @property (atomic, assign, readonly) ASIAuthenticationState authenticationNeeded;
@@ -988,17 +988,17 @@ typedef void (^ASIDataBlock)(NSData *data);
 @property (atomic, atomic, assign) NSTimeInterval persistentConnectionTimeoutSeconds;
 @property (atomic, assign) BOOL shouldUseRFC2616RedirectBehaviour;
 @property (atomic, assign, readonly) BOOL connectionCanBeReused;
-@property (atomic, retain, readonly) NSNumber *requestID;
-@property (atomic, assign) id <ASICacheDelegate> downloadCache;
+@property (atomic, strong, readonly) NSNumber *requestID;
+@property (atomic, unsafe_unretained) id <ASICacheDelegate> downloadCache;
 @property (atomic, assign) ASICachePolicy cachePolicy;
 @property (atomic, assign) ASICacheStoragePolicy cacheStoragePolicy;
 @property (atomic, assign, readonly) BOOL didUseCachedResponse;
 @property (atomic, assign) NSTimeInterval secondsToCache;
-@property (atomic, retain) NSArray *clientCertificates;
+@property (atomic, strong) NSArray *clientCertificates;
 #if TARGET_OS_IPHONE && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_4_0
 @property (atomic, assign) BOOL shouldContinueWhenAppEntersBackground;
 #endif
-@property (atomic, retain) ASIDataDecompressor *dataDecompressor;
+@property (atomic, strong) ASIDataDecompressor *dataDecompressor;
 @property (atomic, assign) BOOL shouldWaitToInflateCompressedResponses;
 
 @end

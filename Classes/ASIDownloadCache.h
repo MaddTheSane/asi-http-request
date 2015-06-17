@@ -40,7 +40,7 @@
 + (NSArray *)fileExtensionsToHandleAsHTML;
 
 @property (assign, nonatomic) ASICachePolicy defaultCachePolicy;
-@property (retain, nonatomic) NSString *storagePath;
-@property (atomic, retain) NSRecursiveLock *accessLock;
+@property (strong, nonatomic) NSString *storagePath;
+@property (atomic, strong) NSRecursiveLock *accessLock;
 @property (atomic, assign) BOOL shouldRespectCacheControlHeaders;
 @end

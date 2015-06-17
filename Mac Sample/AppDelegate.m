@@ -35,22 +35,17 @@
 
 - (id)init
 {
-	[super init];
+	if (!(self = [super init])) return nil;
 	networkQueue = [[ASINetworkQueue alloc] init];
 	[NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(updateBandwidthUsageIndicator) userInfo:nil repeats:YES];
 	return self;
 }
 
-- (void)dealloc
-{
-	[networkQueue release];
-	[super dealloc];
-}
 
 
 - (IBAction)simpleURLFetch:(id)sender
 {
-	ASIHTTPRequest *request = [[[ASIHTTPRequest alloc] initWithURL:[NSURL URLWithString:@"http://allseeing-i.com"]] autorelease];
+	ASIHTTPRequest *request = [[ASIHTTPRequest alloc] initWithURL:[NSURL URLWithString:@"http://allseeing-i.com"]];
 	
 	//Customise our user agent, for no real reason
 	[request addRequestHeader:@"User-Agent" value:@"ASIHTTPRequest"];
@@ -140,21 +135,21 @@
 	
 	ASIHTTPRequest *request;
 	
-	request = [[[ASIHTTPRequest alloc] initWithURL:[NSURL URLWithString:@"http://allseeing-i.com/ASIHTTPRequest/tests/images/small-image.jpg"]] autorelease];
+	request = [[ASIHTTPRequest alloc] initWithURL:[NSURL URLWithString:@"http://allseeing-i.com/ASIHTTPRequest/tests/images/small-image.jpg"]];
 	[request setDownloadDestinationPath:[[[[NSBundle mainBundle] bundlePath] stringByDeletingLastPathComponent] stringByAppendingPathComponent:@"1.png"]];
 	[request setDownloadProgressDelegate:imageProgress1];
 	[request setDidFinishSelector:@selector(imageFetch1Complete:)];
 	[request setDelegate:self];
 	[networkQueue addOperation:request];
 	
-	request = [[[ASIHTTPRequest alloc] initWithURL:[NSURL URLWithString:@"http://allseeing-i.com/ASIHTTPRequest/tests/images/medium-image.jpg"]] autorelease];
+	request = [[ASIHTTPRequest alloc] initWithURL:[NSURL URLWithString:@"http://allseeing-i.com/ASIHTTPRequest/tests/images/medium-image.jpg"]];
 	[request setDownloadDestinationPath:[[[[NSBundle mainBundle] bundlePath] stringByDeletingLastPathComponent] stringByAppendingPathComponent:@"2.png"]];
 	[request setDownloadProgressDelegate:imageProgress2];
 	[request setDidFinishSelector:@selector(imageFetch2Complete:)];
 	[request setDelegate:self];
 	[networkQueue addOperation:request];
 	
-	request = [[[ASIHTTPRequest alloc] initWithURL:[NSURL URLWithString:@"http://allseeing-i.com/ASIHTTPRequest/tests/images/large-image.jpg"]] autorelease];
+	request = [[ASIHTTPRequest alloc] initWithURL:[NSURL URLWithString:@"http://allseeing-i.com/ASIHTTPRequest/tests/images/large-image.jpg"]];
 	[request setDownloadDestinationPath:[[[[NSBundle mainBundle] bundlePath] stringByDeletingLastPathComponent] stringByAppendingPathComponent:@"3.png"]];
 	[request setDownloadProgressDelegate:imageProgress3];
 	[request setDidFinishSelector:@selector(imageFetch3Complete:)];
@@ -182,7 +177,7 @@
 
 - (void)imageFetch1Complete:(ASIHTTPRequest *)request
 {
-	NSImage *img = [[[NSImage alloc] initWithContentsOfFile:[request downloadDestinationPath]] autorelease];
+	NSImage *img = [[NSImage alloc] initWithContentsOfFile:[request downloadDestinationPath]];
 	if (img) {
 		[imageView1 setImage:img];
 	}
@@ -190,7 +185,7 @@
 
 - (void)imageFetch2Complete:(ASIHTTPRequest *)request
 {
-	NSImage *img = [[[NSImage alloc] initWithContentsOfFile:[request downloadDestinationPath]] autorelease];
+	NSImage *img = [[NSImage alloc] initWithContentsOfFile:[request downloadDestinationPath]];
 	if (img) {
 		[imageView2 setImage:img];
 	}
@@ -199,7 +194,7 @@
 
 - (void)imageFetch3Complete:(ASIHTTPRequest *)request
 {
-	NSImage *img = [[[NSImage alloc] initWithContentsOfFile:[request downloadDestinationPath]] autorelease];
+	NSImage *img = [[NSImage alloc] initWithContentsOfFile:[request downloadDestinationPath]];
 	if (img) {
 		[imageView3 setImage:img];
 	}
@@ -213,7 +208,7 @@
 	[progressIndicator setDoubleValue:0];
 	
 	ASIHTTPRequest *request;
-	request = [[[ASIHTTPRequest alloc] initWithURL:[NSURL URLWithString:@"http://allseeing-i.com/top_secret/"]] autorelease];
+	request = [[ASIHTTPRequest alloc] initWithURL:[NSURL URLWithString:@"http://allseeing-i.com/top_secret/"]];
 	[request setDidFinishSelector:@selector(topSecretFetchComplete:)];
 	[request setDelegate:self];
 	[request setUseKeychainPersistence:[keychainCheckbox state]];
@@ -238,7 +233,7 @@
 		modalForWindow: window
 		modalDelegate: self
 		didEndSelector: @selector(authSheetDidEnd:returnCode:contextInfo:)
-		contextInfo: request];
+		contextInfo: (__bridge void *)(request)];
 }
 
 - (void)proxyAuthenticationNeededForRequest:(ASIHTTPRequest *)request
@@ -250,7 +245,7 @@
 	   modalForWindow: window
 		modalDelegate: self
 	   didEndSelector: @selector(authSheetDidEnd:returnCode:contextInfo:)
-		  contextInfo: request];
+		  contextInfo: (__bridge void *)(request)];
 }
 
 
@@ -260,14 +255,14 @@
 
 - (void)authSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo
 {
-	ASIHTTPRequest *request = (ASIHTTPRequest *)contextInfo;
+	ASIHTTPRequest *request = (__bridge ASIHTTPRequest *)contextInfo;
     if (returnCode == NSOKButton) {
 		if ([request authenticationNeeded] == ASIProxyAuthenticationNeeded) {
-			[request setProxyUsername:[[[username stringValue] copy] autorelease]];
-			[request setProxyPassword:[[[password stringValue] copy] autorelease]];			
+			[request setProxyUsername:[[username stringValue] copy]];
+			[request setProxyPassword:[[password stringValue] copy]];			
 		} else {
-			[request setUsername:[[[username stringValue] copy] autorelease]];
-			[request setPassword:[[[password stringValue] copy] autorelease]];
+			[request setUsername:[[username stringValue] copy]];
+			[request setPassword:[[password stringValue] copy]];
 		}
 		[request retryUsingSuppliedCredentials];
     } else {
@@ -291,7 +286,7 @@
 	[networkQueue setRequestDidFinishSelector:@selector(postFinished:)];
 	[networkQueue setDelegate:self];
 	
-	ASIFormDataRequest *request = [[[ASIFormDataRequest alloc] initWithURL:[NSURL URLWithString:@"http://allseeing-i.com/ignore"]] autorelease];
+	ASIFormDataRequest *request = [[ASIFormDataRequest alloc] initWithURL:[NSURL URLWithString:@"http://allseeing-i.com/ignore"]];
 	[request setPostValue:@"test" forKey:@"value1"];
 	[request setPostValue:@"test" forKey:@"value2"];
 	[request setPostValue:@"test" forKey:@"value3"];
@@ -338,7 +333,7 @@
 
 - (void)tableViewDataFetchFinished:(ASIHTTPRequest *)request
 {
-	NSXMLDocument *xml = [[[NSXMLDocument alloc] initWithData:[request responseData] options:NSXMLDocumentValidate error:nil] autorelease];
+	NSXMLDocument *xml = [[NSXMLDocument alloc] initWithData:[request responseData] options:NSXMLDocumentValidate error:nil];
 	for (NSXMLElement *row in [[xml rootElement] elementsForName:@"row"]) {
 		NSMutableDictionary *rowInfo = [NSMutableDictionary dictionary];
 		NSString *description = [[[row elementsForName:@"description"] objectAtIndex:0] stringValue];
@@ -373,7 +368,7 @@
 
 - (void)rowImageDownloadFinished:(ASIHTTPRequest *)request
 {
-	NSImage *image = [[[NSImage alloc] initWithData:[request responseData]] autorelease];
+	NSImage *image = [[NSImage alloc] initWithData:[request responseData]];
 	[(NSMutableDictionary *)[request userInfo] setObject:image forKey:@"image"];
 	[tableView reloadData]; // Not efficient, but I hate table view programming :)
 }

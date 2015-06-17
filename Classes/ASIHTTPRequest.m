@@ -1179,7 +1179,7 @@ static NSOperationQueue *sharedQueue = nil;
 		} else {
 			[self setPostBodyReadStream:[ASIInputStream inputStreamWithFileAtPath:[self postBodyFilePath] request:self]];
 		}
-		[self setReadStream:[NSMakeCollectable(CFReadStreamCreateForStreamedHTTPRequest(kCFAllocatorDefault, request,(CFReadStreamRef)[self postBodyReadStream])) autorelease]];    
+		[self setReadStream:CFBridgingRelease(CFReadStreamCreateForStreamedHTTPRequest(kCFAllocatorDefault, request,(CFReadStreamRef)[self postBodyReadStream]))];
     } else {
 		
 		// If we have a request body, we'll stream it from memory using our custom stream, so that we can measure bandwidth use and it can be bandwidth-throttled if necessary
@@ -1189,10 +1189,10 @@ static NSOperationQueue *sharedQueue = nil;
 			} else if ([self postBody]) {
 				[self setPostBodyReadStream:[ASIInputStream inputStreamWithData:[self postBody] request:self]];
 			}
-			[self setReadStream:[NSMakeCollectable(CFReadStreamCreateForStreamedHTTPRequest(kCFAllocatorDefault, request,(CFReadStreamRef)[self postBodyReadStream])) autorelease]];
+			[self setReadStream:CFBridgingRelease(CFReadStreamCreateForStreamedHTTPRequest(kCFAllocatorDefault, request,(CFReadStreamRef)[self postBodyReadStream]))];
 		
 		} else {
-			[self setReadStream:[NSMakeCollectable(CFReadStreamCreateForHTTPRequest(kCFAllocatorDefault, request)) autorelease]];
+			[self setReadStream:CFBridgingRelease(CFReadStreamCreateForHTTPRequest(kCFAllocatorDefault, request))];
 		}
 	}
 
@@ -1542,7 +1542,7 @@ static NSOperationQueue *sharedQueue = nil;
 			[self setLastBytesSent:totalBytesSent];	
 			
 			// Find out how much data we've uploaded so far
-			[self setTotalBytesSent:[[NSMakeCollectable(CFReadStreamCopyProperty((CFReadStreamRef)[self readStream], kCFStreamPropertyHTTPRequestBytesWrittenCount)) autorelease] unsignedLongLongValue]];
+			[self setTotalBytesSent:[CFBridgingRelease(CFReadStreamCopyProperty((CFReadStreamRef)[self readStream], kCFStreamPropertyHTTPRequestBytesWrittenCount)) unsignedLongLongValue]];
 			if (totalBytesSent > lastBytesSent) {
 				
 				// We've uploaded more data,  reset the timeout
@@ -2155,9 +2155,9 @@ static NSOperationQueue *sharedQueue = nil;
 	}
 	#endif		
 
-	[self setResponseHeaders:[NSMakeCollectable(CFHTTPMessageCopyAllHeaderFields(message)) autorelease]];
+	[self setResponseHeaders:CFBridgingRelease(CFHTTPMessageCopyAllHeaderFields(message))];
 	[self setResponseStatusCode:(int)CFHTTPMessageGetResponseStatusCode(message)];
-	[self setResponseStatusMessage:[NSMakeCollectable(CFHTTPMessageCopyResponseStatusLine(message)) autorelease]];
+	[self setResponseStatusMessage:CFBridgingRelease(CFHTTPMessageCopyResponseStatusLine(message))];
 
 	if ([self downloadCache] && ([[self downloadCache] canUseCachedDataForRequest:self])) {
 
@@ -2261,7 +2261,7 @@ static NSOperationQueue *sharedQueue = nil;
 		
 		NSString *connectionHeader = [[[self responseHeaders] objectForKey:@"Connection"] lowercaseString];
 
-		NSString *httpVersion = [NSMakeCollectable(CFHTTPMessageCopyVersion(message)) autorelease];
+		NSString *httpVersion = CFBridgingRelease(CFHTTPMessageCopyVersion(message));
 		
 		// Don't re-use the connection if the server is HTTP 1.0 and didn't send Connection: Keep-Alive
 		if (![httpVersion isEqualToString:(NSString *)kCFHTTPVersion1_0] || [connectionHeader isEqualToString:@"keep-alive"]) {
@@ -2772,7 +2772,7 @@ static NSOperationQueue *sharedQueue = nil;
 		CFHTTPMessageRef responseHeader = (CFHTTPMessageRef) CFReadStreamCopyProperty((CFReadStreamRef)[self readStream],kCFStreamPropertyHTTPResponseHeader);
 		proxyAuthentication = CFHTTPAuthenticationCreateFromResponse(NULL, responseHeader);
 		CFRelease(responseHeader);
-		[self setProxyAuthenticationScheme:[NSMakeCollectable(CFHTTPAuthenticationCopyMethod(proxyAuthentication)) autorelease]];
+		[self setProxyAuthenticationScheme:CFBridgingRelease(CFHTTPAuthenticationCopyMethod(proxyAuthentication))];
 	}
 	
 	// If we haven't got a CFHTTPAuthenticationRef by now, something is badly wrong, so we'll have to give up
@@ -2785,7 +2785,7 @@ static NSOperationQueue *sharedQueue = nil;
 	// Get the authentication realm
 	[self setProxyAuthenticationRealm:nil];
 	if (!CFHTTPAuthenticationRequiresAccountDomain(proxyAuthentication)) {
-		[self setProxyAuthenticationRealm:[NSMakeCollectable(CFHTTPAuthenticationCopyRealm(proxyAuthentication)) autorelease]];
+		[self setProxyAuthenticationRealm:CFBridgingRelease(CFHTTPAuthenticationCopyRealm(proxyAuthentication))];
 	}
 	
 	// See if authentication is valid
@@ -2949,7 +2949,7 @@ static NSOperationQueue *sharedQueue = nil;
 		CFHTTPMessageRef responseHeader = (CFHTTPMessageRef) CFReadStreamCopyProperty((CFReadStreamRef)[self readStream],kCFStreamPropertyHTTPResponseHeader);
 		requestAuthentication = CFHTTPAuthenticationCreateFromResponse(NULL, responseHeader);
 		CFRelease(responseHeader);
-		[self setAuthenticationScheme:[NSMakeCollectable(CFHTTPAuthenticationCopyMethod(requestAuthentication)) autorelease]];
+		[self setAuthenticationScheme:CFBridgingRelease(CFHTTPAuthenticationCopyMethod(requestAuthentication))];
 	}
 	
 	if (!requestAuthentication) {
@@ -2965,7 +2965,7 @@ static NSOperationQueue *sharedQueue = nil;
 	// Get the authentication realm
 	[self setAuthenticationRealm:nil];
 	if (!CFHTTPAuthenticationRequiresAccountDomain(requestAuthentication)) {
-		[self setAuthenticationRealm:[NSMakeCollectable(CFHTTPAuthenticationCopyRealm(requestAuthentication)) autorelease]];
+		[self setAuthenticationRealm:CFBridgingRelease(CFHTTPAuthenticationCopyRealm(requestAuthentication))];
 	}
 	
 	#if DEBUG_HTTP_AUTHENTICATION
@@ -3408,7 +3408,7 @@ static NSOperationQueue *sharedQueue = nil;
 	[progressLock lock];	
 	// Find out how much data we've uploaded so far
 	[self setLastBytesSent:totalBytesSent];	
-	[self setTotalBytesSent:[[NSMakeCollectable(CFReadStreamCopyProperty((CFReadStreamRef)[self readStream], kCFStreamPropertyHTTPRequestBytesWrittenCount)) autorelease] unsignedLongLongValue]];
+	[self setTotalBytesSent:[CFBridgingRelease(CFReadStreamCopyProperty((CFReadStreamRef)[self readStream], kCFStreamPropertyHTTPRequestBytesWrittenCount)) unsignedLongLongValue]];
 	[self setComplete:YES];
 	if (![self contentLength]) {
 		[self setContentLength:[self totalBytesRead]];
@@ -3653,7 +3653,7 @@ static NSOperationQueue *sharedQueue = nil;
 - (void)handleStreamError
 
 {
-	NSError *underlyingError = [NSMakeCollectable(CFReadStreamCopyError((CFReadStreamRef)[self readStream])) autorelease];
+	NSError *underlyingError = CFBridgingRelease(CFReadStreamCopyError((CFReadStreamRef)[self readStream]));
 
 	if (![self error]) { // We may already have handled this error
 		
@@ -3831,12 +3831,12 @@ static NSOperationQueue *sharedQueue = nil;
 		} else {
 
 #if TARGET_OS_IPHONE
-			NSDictionary *proxySettings = [NSMakeCollectable(CFNetworkCopySystemProxySettings()) autorelease];
+			NSDictionary *proxySettings = CFBridgingRelease(CFNetworkCopySystemProxySettings());
 #else
-			NSDictionary *proxySettings = [NSMakeCollectable(SCDynamicStoreCopyProxies(NULL)) autorelease];
+			NSDictionary *proxySettings = CFBridgingRelease(SCDynamicStoreCopyProxies(NULL));
 #endif
 
-			proxies = [NSMakeCollectable(CFNetworkCopyProxiesForURL((CFURLRef)[self url], (CFDictionaryRef)proxySettings)) autorelease];
+			proxies = CFBridgingRelease(CFNetworkCopyProxiesForURL((CFURLRef)[self url], (CFDictionaryRef)proxySettings));
 
 			// Now check to see if the proxy settings contained a PAC url, we need to run the script to get the real list of proxies if so
 			NSDictionary *settings = [proxies objectAtIndex:0];
@@ -3989,7 +3989,7 @@ static NSOperationQueue *sharedQueue = nil;
 
 		// Obtain the list of proxies by running the autoconfiguration script
 		CFErrorRef err = NULL;
-		NSArray *proxies = [NSMakeCollectable(CFNetworkCopyProxiesForAutoConfigurationScript((CFStringRef)script,(CFURLRef)[self url], &err)) autorelease];
+		NSArray *proxies = CFBridgingRelease(CFNetworkCopyProxiesForAutoConfigurationScript((CFStringRef)script,(CFURLRef)[self url], &err));
 		if (!err && [proxies count] > 0) {
 			NSDictionary *settings = [proxies objectAtIndex:0];
 			[self setProxyHost:[settings objectForKey:(NSString *)kCFProxyHostNameKey]];
@@ -4471,7 +4471,7 @@ static NSOperationQueue *sharedQueue = nil;
 	if (!MIMEType) {
 		return @"application/octet-stream";
 	}
-    return [NSMakeCollectable(MIMEType) autorelease];
+    return CFBridgingRelease(MIMEType);
 }
 
 #pragma mark bandwidth measurement / throttling

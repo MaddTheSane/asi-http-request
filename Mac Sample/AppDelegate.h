@@ -10,7 +10,7 @@
 @class ASIHTTPRequest;
 @class ASINetworkQueue;
 
-@interface AppDelegate : NSObject {
+@interface AppDelegate : NSObject <NSTableViewDataSource, NSTableViewDelegate, NSApplicationDelegate> {
 	ASINetworkQueue *networkQueue;
 	IBOutlet NSProgressIndicator *progressIndicator;
 	IBOutlet NSTextView *htmlSource;

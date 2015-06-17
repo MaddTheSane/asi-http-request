@@ -331,7 +331,7 @@
 
 - (void)tableViewDataFetchFailed:(ASIHTTPRequest *)request
 {
-	if ([[request error] domain] != NetworkRequestErrorDomain || ![[request error] code] == ASIRequestCancelledErrorType) {
+	if ([[request error] domain] != NetworkRequestErrorDomain || !([[request error] code] == ASIRequestCancelledErrorType)) {
 		[tableLoadStatus setStringValue:@"Loading data failed"];
 	}
 }

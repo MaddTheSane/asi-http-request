@@ -49,7 +49,7 @@ static NSMutableArray *requestsUsingXMLParser = nil;
 	}
 }
 
-- (id)initWithURL:(NSURL *)newURL
+- (instancetype)initWithURL:(NSURL *)newURL
 {
 	self = [super initWithURL:newURL];
 	[self setShouldIgnoreExternalResourceErrors:YES];
@@ -82,8 +82,8 @@ static NSMutableArray *requestsUsingXMLParser = nil;
 		return;
 	}
 	webContentType = ASINotParsedWebContentType;
-	NSString *contentType = [[[self responseHeaders] objectForKey:@"Content-Type"] lowercaseString];
-	contentType = [[contentType componentsSeparatedByString:@";"] objectAtIndex:0];
+	NSString *contentType = [[self responseHeaders][@"Content-Type"] lowercaseString];
+	contentType = [contentType componentsSeparatedByString:@";"][0];
 	if ([contentType isEqualToString:@"text/html"] || [contentType isEqualToString:@"text/xhtml"] || [contentType isEqualToString:@"text/xhtml+xml"] || [contentType isEqualToString:@"application/xhtml+xml"]) {
 		[self parseAsHTML];
 		return;
@@ -107,10 +107,10 @@ static NSMutableArray *requestsUsingXMLParser = nil;
 		responseCSS = [self responseString];
 	}
 	if (err) {
-		[self failWithError:[NSError errorWithDomain:NetworkRequestErrorDomain code:100 userInfo:[NSDictionary dictionaryWithObjectsAndKeys:@"Unable to read HTML string from response",NSLocalizedDescriptionKey,err,NSUnderlyingErrorKey,nil]]];
+		[self failWithError:[NSError errorWithDomain:NetworkRequestErrorDomain code:100 userInfo:@{NSLocalizedDescriptionKey: @"Unable to read HTML string from response",NSUnderlyingErrorKey: err}]];
 		return;
 	} else if (!responseCSS) {
-		[self failWithError:[NSError errorWithDomain:NetworkRequestErrorDomain code:100 userInfo:[NSDictionary dictionaryWithObjectsAndKeys:@"Unable to read HTML string from response",NSLocalizedDescriptionKey,nil]]];
+		[self failWithError:[NSError errorWithDomain:NetworkRequestErrorDomain code:100 userInfo:@{NSLocalizedDescriptionKey: @"Unable to read HTML string from response"}]];
 		return;
 	}
 	NSArray *urls = [[self class] CSSURLsFromString:responseCSS];
@@ -141,7 +141,7 @@ static NSMutableArray *requestsUsingXMLParser = nil;
 		[externalResourceRequest setDownloadCache:[self downloadCache]];
 		[externalResourceRequest setCachePolicy:[self cachePolicy]];
 		[externalResourceRequest setCacheStoragePolicy:[self cacheStoragePolicy]];
-		[externalResourceRequest setUserInfo:[NSDictionary dictionaryWithObject:theURL forKey:@"Path"]];
+		[externalResourceRequest setUserInfo:@{@"Path": theURL}];
 		[externalResourceRequest setParentRequest:self];
 		[externalResourceRequest setUrlReplacementMode:[self urlReplacementMode]];
 		[externalResourceRequest setShouldResetDownloadProgress:NO];
@@ -228,7 +228,7 @@ static NSMutableArray *requestsUsingXMLParser = nil;
 		doc = htmlReadMemory([data bytes], (int)[data length], "", [self encodingName], HTML_PARSE_NONET | HTML_PARSE_NOWARNING | HTML_PARSE_NOERROR);
 	}
     if (doc == NULL) {
-		[self failWithError:[NSError errorWithDomain:NetworkRequestErrorDomain code:101 userInfo:[NSDictionary dictionaryWithObjectsAndKeys:@"Error: unable to parse reponse XML",NSLocalizedDescriptionKey,nil]]];
+		[self failWithError:[NSError errorWithDomain:NetworkRequestErrorDomain code:101 userInfo:@{NSLocalizedDescriptionKey: @"Error: unable to parse reponse XML"}]];
 		return;
     }
 	
@@ -268,7 +268,7 @@ static NSMutableArray *requestsUsingXMLParser = nil;
 		[externalResourceRequest setDownloadCache:[self downloadCache]];
 		[externalResourceRequest setCachePolicy:[self cachePolicy]];
 		[externalResourceRequest setCacheStoragePolicy:[self cacheStoragePolicy]];
-		[externalResourceRequest setUserInfo:[NSDictionary dictionaryWithObject:theURL forKey:@"Path"]];
+		[externalResourceRequest setUserInfo:@{@"Path": theURL}];
 		[externalResourceRequest setParentRequest:self];
 		[externalResourceRequest setUrlReplacementMode:[self urlReplacementMode]];
 		[externalResourceRequest setShouldResetDownloadProgress:NO];
@@ -285,19 +285,19 @@ static NSMutableArray *requestsUsingXMLParser = nil;
 
 - (void)externalResourceFetchSucceeded:(ASIHTTPRequest *)externalResourceRequest
 {
-	NSString *originalPath = [[externalResourceRequest userInfo] objectForKey:@"Path"];
-	NSMutableDictionary *requestResponse = [[self resourceList] objectForKey:originalPath];
-	NSString *contentType = [[externalResourceRequest responseHeaders] objectForKey:@"Content-Type"];
+	NSString *originalPath = [externalResourceRequest userInfo][@"Path"];
+	NSMutableDictionary *requestResponse = [self resourceList][originalPath];
+	NSString *contentType = [externalResourceRequest responseHeaders][@"Content-Type"];
 	if (!contentType) {
 		contentType = @"application/octet-stream";
 	}
-	[requestResponse setObject:contentType forKey:@"ContentType"];
+	requestResponse[@"ContentType"] = contentType;
 	if ([self downloadDestinationPath]) {
-		[requestResponse setObject:[externalResourceRequest downloadDestinationPath] forKey:@"DataPath"];
+		requestResponse[@"DataPath"] = [externalResourceRequest downloadDestinationPath];
 	} else {
 		NSData *data = [externalResourceRequest responseData];
 		if (data) {
-			[requestResponse setObject:data forKey:@"Data"];
+			requestResponse[@"Data"] = data;
 		}
 	}
 }
@@ -321,7 +321,7 @@ static NSMutableArray *requestsUsingXMLParser = nil;
 				parsedResponse = [[self responseString] mutableCopy];
 			}
 			if (err) {
-				[self failWithError:[NSError errorWithDomain:NetworkRequestErrorDomain code:101 userInfo:[NSDictionary dictionaryWithObjectsAndKeys:@"Error: unable to read response CSS from disk",NSLocalizedDescriptionKey,nil]]];
+				[self failWithError:[NSError errorWithDomain:NetworkRequestErrorDomain code:101 userInfo:@{NSLocalizedDescriptionKey: @"Error: unable to read response CSS from disk"}]];
 				return;
 			}
 			if (![self error]) {
@@ -337,7 +337,7 @@ static NSMutableArray *requestsUsingXMLParser = nil;
 			if ([self downloadDestinationPath]) {
 				[parsedResponse writeToFile:[self downloadDestinationPath] atomically:NO encoding:[self responseEncoding] error:&err];
 				if (err) {
-					[self failWithError:[NSError errorWithDomain:NetworkRequestErrorDomain code:101 userInfo:[NSDictionary dictionaryWithObjectsAndKeys:@"Error: unable to write response CSS to disk",NSLocalizedDescriptionKey,nil]]];
+					[self failWithError:[NSError errorWithDomain:NetworkRequestErrorDomain code:101 userInfo:@{NSLocalizedDescriptionKey: @"Error: unable to write response CSS to disk"}]];
 					return;
 				}
 			} else {
@@ -423,7 +423,7 @@ static NSMutableArray *requestsUsingXMLParser = nil;
 	// Create xpath evaluation context
     xmlXPathContextPtr xpathCtx = xmlXPathNewContext(doc);
     if(xpathCtx == NULL) {
-		[self failWithError:[NSError errorWithDomain:NetworkRequestErrorDomain code:101 userInfo:[NSDictionary dictionaryWithObjectsAndKeys:@"Error: unable to create new XPath context",NSLocalizedDescriptionKey,nil]]];
+		[self failWithError:[NSError errorWithDomain:NetworkRequestErrorDomain code:101 userInfo:@{NSLocalizedDescriptionKey: @"Error: unable to create new XPath context"}]];
 		return;
     }
 
@@ -431,7 +431,7 @@ static NSMutableArray *requestsUsingXMLParser = nil;
     xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression(xpathExpr, xpathCtx);
     if(xpathObj == NULL) {
         xmlXPathFreeContext(xpathCtx); 
-		[self failWithError:[NSError errorWithDomain:NetworkRequestErrorDomain code:101 userInfo:[NSDictionary dictionaryWithObjectsAndKeys:@"Error: unable to evaluate XPath expression!",NSLocalizedDescriptionKey,nil]]];
+		[self failWithError:[NSError errorWithDomain:NetworkRequestErrorDomain code:101 userInfo:@{NSLocalizedDescriptionKey: @"Error: unable to evaluate XPath expression!"}]];
 		return;
     }
 	
@@ -498,8 +498,8 @@ static NSMutableArray *requestsUsingXMLParser = nil;
 		if (![[[newURL substringToIndex:5] lowercaseString] isEqualToString:@"data:"]) {
 			NSURL *theURL = [NSURL URLWithString:newURL relativeToURL:[self url]];
 			if (theURL) {
-				if (![[self resourceList] objectForKey:newURL]) {
-					[[self resourceList] setObject:[NSMutableDictionary dictionary] forKey:newURL];
+				if (![self resourceList][newURL]) {
+					[self resourceList][newURL] = [NSMutableDictionary dictionary];
 				}
 			}
 		}
@@ -512,7 +512,7 @@ static NSMutableArray *requestsUsingXMLParser = nil;
 	// Create xpath evaluation context
 	xmlXPathContextPtr xpathCtx = xmlXPathNewContext(doc);
 	if(xpathCtx == NULL) {
-		[self failWithError:[NSError errorWithDomain:NetworkRequestErrorDomain code:101 userInfo:[NSDictionary dictionaryWithObjectsAndKeys:@"Error: unable to create new XPath context",NSLocalizedDescriptionKey,nil]]];
+		[self failWithError:[NSError errorWithDomain:NetworkRequestErrorDomain code:101 userInfo:@{NSLocalizedDescriptionKey: @"Error: unable to create new XPath context"}]];
 		return;
 	}
 
@@ -520,7 +520,7 @@ static NSMutableArray *requestsUsingXMLParser = nil;
 	xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression(xpathExpr, xpathCtx);
 	if(xpathObj == NULL) {
 		xmlXPathFreeContext(xpathCtx);
-		[self failWithError:[NSError errorWithDomain:NetworkRequestErrorDomain code:101 userInfo:[NSDictionary dictionaryWithObjectsAndKeys:@"Error: unable to evaluate XPath expression!",NSLocalizedDescriptionKey,nil]]];
+		[self failWithError:[NSError errorWithDomain:NetworkRequestErrorDomain code:101 userInfo:@{NSLocalizedDescriptionKey: @"Error: unable to evaluate XPath expression!"}]];
 		return;
 	}
 
@@ -653,9 +653,9 @@ static NSMutableArray *requestsUsingXMLParser = nil;
 	NSString *newPath = @"";
 	NSString *sourcePathComponent, *destinationPathComponent;
 	for (i=0; i<[sourcePathComponents count]; i++) {
-		sourcePathComponent = [sourcePathComponents objectAtIndex:i];
+		sourcePathComponent = sourcePathComponents[i];
 		if ([destinationPathComponents count] > i) {
-			destinationPathComponent = [destinationPathComponents objectAtIndex:i];
+			destinationPathComponent = destinationPathComponents[i];
 			if (![sourcePathComponent isEqualToString:destinationPathComponent]) {
 				NSUInteger i2;
 				for (i2=i+1; i2<[sourcePathComponents count]; i2++) {
@@ -663,7 +663,7 @@ static NSMutableArray *requestsUsingXMLParser = nil;
 				}
 				newPath = [newPath stringByAppendingPathComponent:destinationPathComponent];
 				for (i2=i+1; i2<[destinationPathComponents count]; i2++) {
-					newPath = [newPath stringByAppendingPathComponent:[destinationPathComponents objectAtIndex:i2]];
+					newPath = [newPath stringByAppendingPathComponent:destinationPathComponents[i2]];
 				}
 				break;
 			}
@@ -675,16 +675,16 @@ static NSMutableArray *requestsUsingXMLParser = nil;
 - (NSString *)contentForExternalURL:(NSString *)theURL
 {
 	if ([self urlReplacementMode] == ASIReplaceExternalResourcesWithLocalURLs) {
-		NSString *resourcePath = [[resourceList objectForKey:theURL] objectForKey:@"DataPath"];
+		NSString *resourcePath = resourceList[theURL][@"DataPath"];
 		return [self relativePathTo:resourcePath fromPath:[self downloadDestinationPath]];
 	}
 	NSData *data;
-	if ([[resourceList objectForKey:theURL] objectForKey:@"DataPath"]) {
-		data = [NSData dataWithContentsOfFile:[[resourceList objectForKey:theURL] objectForKey:@"DataPath"]];
+	if (resourceList[theURL][@"DataPath"]) {
+		data = [NSData dataWithContentsOfFile:resourceList[theURL][@"DataPath"]];
 	} else {
-		data = [[resourceList objectForKey:theURL] objectForKey:@"Data"];
+		data = resourceList[theURL][@"Data"];
 	}
-	NSString *contentType = [[resourceList objectForKey:theURL] objectForKey:@"ContentType"];
+	NSString *contentType = resourceList[theURL][@"ContentType"];
 	if (data && contentType) {
 		NSString *dataURI = [NSString stringWithFormat:@"data:%@;base64,",contentType];
 		dataURI = [dataURI stringByAppendingString:[ASIHTTPRequest base64forData:data]];
@@ -707,7 +707,7 @@ static NSMutableArray *requestsUsingXMLParser = nil;
 		unsigned char result[16];
 		CC_MD5(cStr, (CC_LONG)strlen(cStr), result);
 		NSString *md5 = [NSString stringWithFormat:@"%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X",result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7],result[8], result[9], result[10], result[11],result[12], result[13], result[14], result[15]]; 	
-		return [[NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0] stringByAppendingPathComponent:[md5 stringByAppendingPathExtension:@"html"]];
+		return [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES)[0] stringByAppendingPathComponent:[md5 stringByAppendingPathExtension:@"html"]];
 	}
 }
 

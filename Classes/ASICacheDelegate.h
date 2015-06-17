@@ -13,7 +13,7 @@
 // When setting a cache policy, you can use a combination of these values as a bitmask
 // For example: [request setCachePolicy:ASIAskServerIfModifiedCachePolicy|ASIFallbackToCacheIfLoadFailsCachePolicy|ASIDoNotWriteToCacheCachePolicy];
 // Note that some of the behaviours below are mutally exclusive - you cannot combine ASIAskServerIfModifiedWhenStaleCachePolicy and ASIAskServerIfModifiedCachePolicy, for example.
-typedef enum _ASICachePolicy {
+typedef NS_OPTIONS(UInt32, ASICachePolicy) {
 
 	// The default cache policy. When you set a request to use this, it will use the cache's defaultCachePolicy
 	// ASIDownloadCache's default cache policy is 'ASIAskServerIfModifiedWhenStaleCachePolicy'
@@ -39,14 +39,14 @@ typedef enum _ASICachePolicy {
 
 	// Specifies that cached data may be used if the request fails. If cached data is used, the request will succeed without error. Usually used in combination with other options above.
 	ASIFallbackToCacheIfLoadFailsCachePolicy = 64
-} ASICachePolicy;
+};
 
 // Cache storage policies control whether cached data persists between application launches (ASICachePermanentlyCacheStoragePolicy) or not (ASICacheForSessionDurationCacheStoragePolicy)
 // Calling [ASIHTTPRequest clearSession] will remove any data stored using ASICacheForSessionDurationCacheStoragePolicy
-typedef enum _ASICacheStoragePolicy {
+typedef NS_ENUM(int, ASICacheStoragePolicy) {
 	ASICacheForSessionDurationCacheStoragePolicy = 0,
 	ASICachePermanentlyCacheStoragePolicy = 1
-} ASICacheStoragePolicy;
+};
 
 
 @protocol ASICacheDelegate <NSObject>

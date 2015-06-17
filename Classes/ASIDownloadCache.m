@@ -28,11 +28,11 @@ static NSArray *fileExtensionsToHandleAsHTML = nil;
 	if (self == [ASIDownloadCache class]) {
 		// Obviously this is not an exhaustive list, but hopefully these are the most commonly used and this will 'just work' for the widest range of people
 		// I imagine many web developers probably use url rewriting anyway
-		fileExtensionsToHandleAsHTML = [[NSArray alloc] initWithObjects:@"asp",@"aspx",@"jsp",@"php",@"rb",@"py",@"pl",@"cgi", nil];
+		fileExtensionsToHandleAsHTML = @[@"asp",@"aspx",@"jsp",@"php",@"rb",@"py",@"pl",@"cgi"];
 	}
 }
 
-- (id)init
+- (instancetype)init
 {
 	self = [super init];
 	[self setShouldRespectCacheControlHeaders:YES];
@@ -41,13 +41,13 @@ static NSArray *fileExtensionsToHandleAsHTML = nil;
 	return self;
 }
 
-+ (id)sharedCache
++ (ASIDownloadCache*)sharedCache
 {
 	if (!sharedCache) {
 		@synchronized(self) {
 			if (!sharedCache) {
 				sharedCache = [[self alloc] init];
-				[sharedCache setStoragePath:[[NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0] stringByAppendingPathComponent:@"ASIHTTPRequestCache"]];
+				[sharedCache setStoragePath:[NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES)[0] stringByAppendingPathComponent:@"ASIHTTPRequestCache"]];
 			}
 		}
 	}
@@ -73,7 +73,7 @@ static NSArray *fileExtensionsToHandleAsHTML = nil;
 	NSFileManager *fileManager = [[NSFileManager alloc] init];
 
 	BOOL isDirectory = NO;
-	NSArray *directories = [NSArray arrayWithObjects:path,[path stringByAppendingPathComponent:sessionCacheFolder],[path stringByAppendingPathComponent:permanentCacheFolder],nil];
+	NSArray *directories = @[path,[path stringByAppendingPathComponent:sessionCacheFolder],[path stringByAppendingPathComponent:permanentCacheFolder]];
 	for (NSString *directory in directories) {
 		BOOL exists = [fileManager fileExistsAtPath:directory isDirectory:&isDirectory];
 		if (exists && !isDirectory) {
@@ -102,7 +102,7 @@ static NSArray *fileExtensionsToHandleAsHTML = nil;
 	if (!expires) {
 		return;
 	}
-	[cachedHeaders setObject:[NSNumber numberWithDouble:[expires timeIntervalSince1970]] forKey:@"X-ASIHTTPRequest-Expires"];
+	cachedHeaders[@"X-ASIHTTPRequest-Expires"] = @([expires timeIntervalSince1970]);
 	[cachedHeaders writeToFile:headerPath atomically:NO];
 }
 
@@ -146,7 +146,7 @@ static NSArray *fileExtensionsToHandleAsHTML = nil;
 
 	NSDate *expires = [self expiryDateForRequest:request maxAge:maxAge];
 	if (expires) {
-		[responseHeaders setObject:[NSNumber numberWithDouble:[expires timeIntervalSince1970]] forKey:@"X-ASIHTTPRequest-Expires"];
+		responseHeaders[@"X-ASIHTTPRequest-Expires"] = @([expires timeIntervalSince1970]);
 	}
 
 	// Store the response code in a custom header so we can reuse it later
@@ -156,7 +156,7 @@ static NSArray *fileExtensionsToHandleAsHTML = nil;
 	if (statusCode == 304) {
 		statusCode = 200;
 	}
-	[responseHeaders setObject:[NSNumber numberWithInt:statusCode] forKey:@"X-ASIHTTPRequest-Response-Status-Code"];
+	responseHeaders[@"X-ASIHTTPRequest-Response-Status-Code"] = @(statusCode);
 
 	[responseHeaders writeToFile:headerPath atomically:NO];
 
@@ -333,9 +333,9 @@ static NSArray *fileExtensionsToHandleAsHTML = nil;
 	if ([request responseHeaders] && [request complete]) {
 
 		// If the Etag or Last-Modified date are different from the one we have, we'll have to fetch this resource again
-		NSArray *headersToCompare = [NSArray arrayWithObjects:@"Etag",@"Last-Modified",nil];
+		NSArray *headersToCompare = @[@"Etag",@"Last-Modified"];
 		for (NSString *header in headersToCompare) {
-			if (![[[request responseHeaders] objectForKey:header] isEqualToString:[cachedHeaders objectForKey:header]]) {
+			if (![[request responseHeaders][header] isEqualToString:cachedHeaders[header]]) {
 				[[self accessLock] unlock];
 				return NO;
 			}
@@ -345,7 +345,7 @@ static NSArray *fileExtensionsToHandleAsHTML = nil;
 	if ([self shouldRespectCacheControlHeaders]) {
 
 		// Look for X-ASIHTTPRequest-Expires header to see if the content is out of date
-		NSNumber *expires = [cachedHeaders objectForKey:@"X-ASIHTTPRequest-Expires"];
+		NSNumber *expires = cachedHeaders[@"X-ASIHTTPRequest-Expires"];
 		if (expires) {
 			if ([[NSDate dateWithTimeIntervalSince1970:[expires doubleValue]] timeIntervalSinceNow] >= 0) {
 				[[self accessLock] unlock];
@@ -418,13 +418,13 @@ static NSArray *fileExtensionsToHandleAsHTML = nil;
 
 + (BOOL)serverAllowsResponseCachingForRequest:(ASIHTTPRequest *)request
 {
-	NSString *cacheControl = [[[request responseHeaders] objectForKey:@"Cache-Control"] lowercaseString];
+	NSString *cacheControl = [[request responseHeaders][@"Cache-Control"] lowercaseString];
 	if (cacheControl) {
 		if ([cacheControl isEqualToString:@"no-cache"] || [cacheControl isEqualToString:@"no-store"]) {
 			return NO;
 		}
 	}
-	NSString *pragma = [[[request responseHeaders] objectForKey:@"Pragma"] lowercaseString];
+	NSString *pragma = [[request responseHeaders][@"Pragma"] lowercaseString];
 	if (pragma) {
 		if ([pragma isEqualToString:@"no-cache"]) {
 			return NO;

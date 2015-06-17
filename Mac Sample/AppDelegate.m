@@ -33,7 +33,7 @@
 @implementation AppDelegate
 
 
-- (id)init
+- (instancetype)init
 {
 	if (!(self = [super init])) return nil;
 	networkQueue = [[ASINetworkQueue alloc] init];
@@ -336,9 +336,9 @@
 	NSXMLDocument *xml = [[NSXMLDocument alloc] initWithData:[request responseData] options:NSXMLDocumentValidate error:nil];
 	for (NSXMLElement *row in [[xml rootElement] elementsForName:@"row"]) {
 		NSMutableDictionary *rowInfo = [NSMutableDictionary dictionary];
-		NSString *description = [[[row elementsForName:@"description"] objectAtIndex:0] stringValue];
+		NSString *description = [[row elementsForName:@"description"][0] stringValue];
 		[rowInfo setValue:description forKey:@"description"];
-		NSString *imageURL = [[[row elementsForName:@"image"] objectAtIndex:0] stringValue];
+		NSString *imageURL = [[row elementsForName:@"image"][0] stringValue];
 		ASIHTTPRequest *imageRequest = [ASIHTTPRequest requestWithURL:[NSURL URLWithString:imageURL]];
 		[imageRequest setDownloadCache:[ASIDownloadCache sharedCache]];
 		[imageRequest setDidFinishSelector:@selector(rowImageDownloadFinished:)];
@@ -359,9 +359,9 @@
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	if ([[aTableColumn identifier] isEqualToString:@"image"]) {
-		return [[[self rowData] objectAtIndex:rowIndex] objectForKey:@"image"];
+		return [self rowData][rowIndex][@"image"];
 	} else {
-		return [[[self rowData] objectAtIndex:rowIndex] objectForKey:@"description"];
+		return [self rowData][rowIndex][@"description"];
 	}
 }
 
@@ -369,7 +369,7 @@
 - (void)rowImageDownloadFinished:(ASIHTTPRequest *)request
 {
 	NSImage *image = [[NSImage alloc] initWithData:[request responseData]];
-	[(NSMutableDictionary *)[request userInfo] setObject:image forKey:@"image"];
+	((NSMutableDictionary *)[request userInfo])[@"image"] = image;
 	[tableView reloadData]; // Not efficient, but I hate table view programming :)
 }
 
@@ -388,7 +388,7 @@
 - (void)webView:(WebView *)sender decidePolicyForNavigationAction:(NSDictionary *)actionInformation request:(NSURLRequest *)request frame:(WebFrame *)frame decisionListener:(id)listener
 {
 	// If this is a web page we've requested ourselves, let it load
-	if ([[actionInformation objectForKey:WebActionNavigationTypeKey] intValue] == WebNavigationTypeOther) {
+	if ([actionInformation[WebActionNavigationTypeKey] intValue] == WebNavigationTypeOther) {
 		[listener use];
 		return;
 	}

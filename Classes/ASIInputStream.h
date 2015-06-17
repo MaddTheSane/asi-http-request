@@ -18,8 +18,8 @@
 	NSInputStream *stream;
 	ASIHTTPRequest *__unsafe_unretained request;
 }
-+ (id)inputStreamWithFileAtPath:(NSString *)path request:(ASIHTTPRequest *)request;
-+ (id)inputStreamWithData:(NSData *)data request:(ASIHTTPRequest *)request;
++ (instancetype)inputStreamWithFileAtPath:(NSString *)path request:(ASIHTTPRequest *)request;
++ (instancetype)inputStreamWithData:(NSData *)data request:(ASIHTTPRequest *)request;
 
 @property (strong, nonatomic) NSInputStream *stream;
 @property (unsafe_unretained, nonatomic) ASIHTTPRequest *request;
